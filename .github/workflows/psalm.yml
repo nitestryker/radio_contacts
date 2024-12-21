@@ -19,19 +19,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up PHP
+      - name: Set up PHP with required extensions
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0'
+          extensions: mysqli
           tools: composer
 
-      - name: Install dependencies with platform requirements ignored
-        run: composer install --no-progress --ignore-platform-req=ext-mysqli
+      - name: Install Composer dependencies
+        run: composer install --no-scripts --no-progress
 
-      - name: Run Psalm Security Scan
-        uses: psalm/psalm-github-security-scan@f3e6fd9432bc3e44aec078572677ce9d2ef9c287
-        with:
-          args: --ignore-platform-req=ext-mysqli
+      - name: Psalm Security Scan
+        run: |
+          docker pull ghcr.io/psalm/psalm-security-scan:latest
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -w /app \
+            ghcr.io/psalm/psalm-security-scan:latest \
+            --ignore-platform-req=ext-mysqli
 
       - name: Upload Security Analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v3
