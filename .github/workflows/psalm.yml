@@ -14,26 +14,24 @@ permissions:
 jobs:
   php-security:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up PHP with Composer
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0'
           tools: composer
 
-      - name: Install Composer dependencies ignoring platform requirements
-        run: composer install --no-scripts --no-progress --ignore-platform-req=ext-mysqli
+      - name: Install dependencies with platform requirements ignored
+        run: composer install --no-progress --ignore-platform-req=ext-mysqli
 
       - name: Run Psalm Security Scan
         uses: psalm/psalm-github-security-scan@f3e6fd9432bc3e44aec078572677ce9d2ef9c287
+        with:
+          args: --ignore-platform-req=ext-mysqli
 
       - name: Upload Security Analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v3
