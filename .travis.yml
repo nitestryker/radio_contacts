@@ -1,0 +1,41 @@
+language: php
+
+git:
+  depth: 3
+
+php:
+  - 8.2.4
+
+services:
+  - mysql
+
+env:
+  global:
+    - DB=mysql
+
+before_script:
+  - composer install --prefer-dist --no-interaction
+  - php -r "file_exists('.env') || copy('.env.example', '.env');"
+  - php artisan key:generate
+  - php artisan migrate
+  - php artisan db:seed
+
+script:
+  - vendor/bin/phpunit --configuration phpunit.xml --coverage-text
+
+jobs:
+  allow_failures:
+    - php: nightly
+  fast_finish: true
+
+notifications:
+  email:
+    recipients:
+      - nitestryker@gmail.com
+    on_success: change
+    on_failure: always
+
+matrix:
+  include:
+    - php: 8.2.4
+      env: DB=mysql
